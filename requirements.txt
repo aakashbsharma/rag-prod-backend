@@ -3,6 +3,7 @@ Django==5.2.8
 django-cors-headers==4.9.0
 djangorestframework==3.16.1
 groq==1.0.0
+gunicorn==23.0.0
 langchain==1.1.0
 langchain-community==0.4.1
 langchain-text-splitters==1.0.0
