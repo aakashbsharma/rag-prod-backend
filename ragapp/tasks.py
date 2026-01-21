@@ -19,7 +19,7 @@ def process_and_store_pinecone(file_path):
     # 2. Connect to Pinecone
     pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
     index = pc.Index(host=os.getenv("PINECONE_HOST"))
-
+    index.delete(namespace="pdf-docs")
     # 3. Format records with Deterministic IDs
     records = []
     for i, chunk in enumerate(chunks):

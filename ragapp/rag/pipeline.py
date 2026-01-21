@@ -10,7 +10,6 @@ def rag_pipeline(question, top_k, system_prompt):
     max_chars = 2000
     if len(content_str) > max_chars:
         content_str = content_str[:max_chars]
-    print(content_str)
     final_answer_list = []
     for chunk in llm_response(
                             system_prompt=system_prompt, 
