@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-v3&1rb3cao7*st*6yv(r*ph)yo6!f3m3gix)35iz35)9^)^tr5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['rag-prod-backend.onrender.com']
+ALLOWED_HOSTS = ['rag-prod-backend.onrender.com', ]
 
 # Application definition
 INSTALLED_APPS = [
