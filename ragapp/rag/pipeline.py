@@ -1,8 +1,8 @@
 from .retriever import relevant_doc_retriever
 from .llm import llm_response
 
-def rag_pipeline(question, top_k, system_prompt):
-    content = relevant_doc_retriever(query=question, top_k=top_k)
+def rag_pipeline(question, top_k, system_prompt, rerank):
+    content = relevant_doc_retriever(query=question, top_k=top_k, rank=rerank)
     if not content:
         yield "No relevant documents found."
         return

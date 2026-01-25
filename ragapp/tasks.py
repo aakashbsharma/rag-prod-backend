@@ -40,8 +40,7 @@ def process_with_unstructured_limited(file_path):
     except Exception as e:
         print(f"API Error: {e}")
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
-    chunks = text_splitter.split_documents(full_text)
-
+    chunks = text_splitter.split_text(full_text)
     # 2. Connect to Pinecone
     pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
     index = pc.Index(host=os.getenv("PINECONE_HOST"))
@@ -51,14 +50,11 @@ def process_with_unstructured_limited(file_path):
         pass
     # 3. Format records with Deterministic IDs
     records = []
-    for i, chunk in enumerate(chunks):
-        # Create unique ID based on content + filename
-        content = chunk.page_content
-        unique_id = hashlib.sha256(f"{file_path}{content}".encode()).hexdigest()
-        
+    for i, chunk_content in enumerate(chunks):
+        unique_id = hashlib.sha256(f"{file_path}{chunk_content}".encode()).hexdigest()
         records.append({
             "_id": unique_id,
-            "text": content,
+            "text": chunk_content,  # Integrated Inference uses this field
         })
 
     # 4. Upsert (Pinecone does the embedding work!)
