@@ -3,18 +3,44 @@ import hashlib
 from dotenv import load_dotenv
 from celery import shared_task
 from pinecone import Pinecone
-from langchain_community.document_loaders import PyMuPDFLoader
+from pypdf import PdfReader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from unstructured_client import UnstructuredClient
+from unstructured_client.models import operations, shared
 
 load_dotenv()
 
+client = UnstructuredClient(api_key_auth=os.getenv("UNSTRUCTURED_API_KEY"))
 @shared_task
-def process_and_store_pinecone(file_path):
-    # 1. Standard Loading & Chunking
-    loader = PyMuPDFLoader(file_path)
-    pages = loader.load()
+def process_with_unstructured_limited(file_path):
+    # 1. Get the actual page count
+    reader = PdfReader(file_path)
+    total_pages = len(reader.pages)
+    
+    # 2. Set the end of the range to 10 or the total, whichever is smaller
+    end_page = min(10, total_pages)
+
+    with open(file_path, "rb") as f:
+        data = f.read()
+
+    req = operations.PartitionRequest(
+        partition_parameters=shared.PartitionParameters(
+            files=shared.Files(content=data, file_name=file_path),
+            strategy=shared.Strategy.HI_RES,
+            # This is the key: only process pages 1 through 10
+            split_pdf_page_range=[1, end_page], 
+            split_pdf_page=True # Required for the range parameter to work
+        )
+    )
+
+    try:
+        res = client.general.partition(request=req)
+        # Combine the elements into text
+        full_text = "\n\n".join([el['text'] for el in res.elements])
+    except Exception as e:
+        print(f"API Error: {e}")
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
-    chunks = text_splitter.split_documents(pages)
+    chunks = text_splitter.split_documents(full_text)
 
     # 2. Connect to Pinecone
     pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
@@ -32,7 +58,7 @@ def process_and_store_pinecone(file_path):
         
         records.append({
             "_id": unique_id,
-            "text": content, # This key must match your index 'field_map'
+            "text": content,
         })
 
     # 4. Upsert (Pinecone does the embedding work!)
