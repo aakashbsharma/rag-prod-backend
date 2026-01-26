@@ -10,9 +10,9 @@ from unstructured_client.models import operations, shared
 
 load_dotenv()
 
-client = UnstructuredClient(api_key_auth=os.getenv("UNSTRUCTURED_API_KEY"))
 @shared_task
 def process_with_unstructured_limited(file_path):
+    client = UnstructuredClient(api_key_auth=os.getenv("UNSTRUCTURED_API_KEY"))
     # 1. Get the actual page count
     reader = PdfReader(file_path)
     total_pages = len(reader.pages)
