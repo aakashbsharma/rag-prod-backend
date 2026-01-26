@@ -37,6 +37,9 @@ def process_with_unstructured_limited(file_path):
         res = client.general.partition(request=req)
         # Combine the elements into text
         full_text = "\n\n".join([el['text'] for el in res.elements])
+        del res
+        import gc
+        gc.collect()
     except Exception as e:
         print(f"API Error: {e}")
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
